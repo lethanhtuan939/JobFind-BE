@@ -13,14 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('post_level', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
+            $table->unsignedBigInteger('post_id')->nullable();
+            $table->unsignedBigInteger('level_id')->nullable();
             $table->timestamps();
+
+            $table->foreign('post_id')->references('id')->on('post')->onDelete('set null');
+            $table->foreign('level_id')->references('id')->on('level')->onDelete('set null');
         });
     }
 
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('post_level');
     }
 };
