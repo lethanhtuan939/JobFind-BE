@@ -12,6 +12,9 @@ class AuthController extends Controller
     public function __construct(AuthService $authService)
     {
         $this->authService = $authService;
+        $this->middleware('auth:api', ['except' => ['login', 'socialLogin', 'register', 
+                                                    'verifyOtp', 'resendOtp', 'socialCallback',
+                                                    'forgotPassword']]);
     }
 
     public function register(Request $request)
@@ -73,25 +76,15 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
-            $result = $this->authService->login($request->only(['email', 'password']));
+            $credentials = $request->only(['email', 'password']);
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Login successful',
-                'data' => $result
-            ]);
+            $token = $this->authService->login($credentials);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation error',
-                'errors' => $e->errors()
-            ], 422);
-
+            return $this->respondWithToken($token);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 401);
         }
     }
@@ -125,7 +118,7 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            $this->authService->logout($request->user());
+            auth()->logout();
 
             return response()->json([
                 'status' => true,
@@ -138,5 +131,78 @@ class AuthController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function me()
+    {
+        return response()->json([
+            'status' => true,
+            'data' => auth()->user()
+        ]);
+    }
+
+    public function refresh()
+    {
+        return $this->respondWithToken(auth()->refresh());
+    }
+
+    public function socialLogin(Request $request) {
+        $loginType = $request->query('login_type');
+
+        if ($loginType) {
+            $url = $this->authService->generateLoginUrl($loginType);
+
+            return response()->json([
+                'status' => true,
+                'data' => [
+                    'url' => $url
+                ]
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid login type'
+            ], 400);
+        }
+    }
+
+    public function socialCallback(Request $request) {
+        try {
+            $loginType = $request->input('login_type');
+            $code = $request->input('code');
+
+            if (!$loginType || !$code) {
+                throw new \Exception('Invalid login type or code');
+            }
+
+            $token = $this->authService->handleSocialCallback($loginType, $code);
+
+            return $this->respondWithToken($token);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function forgotPassword(Request $request) {
+        $email = $request->input('email');
+
+        $user = User::findOrFail($userId);
+
+        $token = $this->$authService->generateTokenChangePassword();
+
+        $this->$authService->sendEmailVerification($token, $user);
+    }
+
+    protected function respondWithToken($token)
+    {
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60
+        ]);
     }
 }
