@@ -10,6 +10,10 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Http;
+use Laravel\Socialite\Facades\Socialite;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Laravel\Socialite\Contracts\User as SocialiteUser;
 
 class AuthService
 {
@@ -31,7 +35,6 @@ class AuthService
             'status' => UserStatus::PENDING
         ]);
 
-        // Generate and send OTP
         $this->sendVerificationOtp($user);
 
         return $user;
@@ -42,7 +45,7 @@ class AuthService
         $validator = validator($data, [
             'username' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         if ($validator->fails()) {
@@ -52,22 +55,21 @@ class AuthService
 
     public function sendVerificationOtp(User $user)
     {
-        // Generate OTP
         $verification = $this->otpService->generateOtp($user);
 
-        // Send OTP via email
-        Mail::to($user->email)->send(new OtpVerificationMail($verification->otp_code));
+        $this->sendEmailVerification($verification->otp_code);
+    }
+
+    private function sendEmailVerification($token, $user) {
+        Mail::to($user->email)->send(new OtpVerificationMail($token));
     }
 
     public function verifyOtp(int $userId, string $otpCode)
     {
-        // Validate input
         $this->validateOtpVerification($userId, $otpCode);
 
-        // Find user
         $user = User::findOrFail($userId);
 
-        // Verify OTP
         $verified = $this->otpService->verifyOtp($user, $otpCode);
 
         if (!$verified) {
@@ -84,7 +86,7 @@ class AuthService
             'otp_code' => $otpCode
         ], [
             'user_id' => 'required|exists:users,id',
-            'otp_code' => 'required|string|size:6'
+            'otp_code' => 'required|string'
         ]);
 
         if ($validator->fails()) {
@@ -94,27 +96,23 @@ class AuthService
 
     public function login(array $credentials)
     {
-        // Validate login input
         $this->validateLogin($credentials);
 
-        // Find user by email
         $user = User::where('email', $credentials['email'])->first();
 
-        // Check if user exists and password is correct
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             throw new \Exception('Invalid credentials');
         }
 
-        // Check user status
         $this->checkUserStatus($user);
 
-        // Generate authentication token
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = JWTAuth::attempt($credentials);
 
-        return [
-            'user' => $user,
-            'token' => $token
-        ];
+        if (!$token) {
+            throw new \Exception('Could not create token');
+        }
+
+        return $token;
     }
 
     private function validateLogin(array $credentials)
@@ -145,7 +143,6 @@ class AuthService
 
     public function resendOtp(string $email)
     {
-        // Validate email
         $validator = validator(['email' => $email], [
             'email' => 'required|email|exists:users,email'
         ]);
@@ -154,10 +151,8 @@ class AuthService
             throw new ValidationException($validator);
         }
 
-        // Find user
         $user = User::where('email', $email)->first();
 
-        // Check if user is already verified
         if ($user->status !== UserStatus::PENDING) {
             throw new \Exception('User is already verified');
         }
@@ -171,5 +166,103 @@ class AuthService
     public function logout(User $user)
     {
         $user->tokens()->delete();
+    }
+
+    public function generateLoginUrl($loginType)
+    {
+        return Socialite::driver($loginType)
+                    ->stateless()
+                    ->redirect()
+                    ->getTargetUrl();
+    }
+
+    public function handleSocialCallback($loginType, $code)
+    {
+        if ($loginType === 'google') {
+            $tokenResponse = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+                'client_id' => config('services.google.client_id'),
+                'client_secret' => config('services.google.client_secret'),
+                'redirect_uri' => config('services.google.redirect'),
+                'grant_type' => 'authorization_code',
+                'code' => $code,
+            ]);
+
+            if ($tokenResponse->failed()) {
+                throw new \Exception('Failed to obtain access token from Google');
+            }
+
+            $accessToken = $tokenResponse->json()['access_token'];
+
+            $userInfoResponse = Http::get('https://www.googleapis.com/oauth2/v3/userinfo', [
+                'access_token' => $accessToken,
+            ]);
+
+            if ($userInfoResponse->failed()) {
+                throw new \Exception('Failed to fetch user info from Google');
+            }
+
+            $userInfo = $userInfoResponse->json();
+            return $this->processUser($userInfo, 'google');
+        } elseif ($loginType === 'facebook') {
+            $tokenResponse = Http::asForm()->post('https://graph.facebook.com/v12.0/oauth/access_token', [
+                'client_id' => config('services.facebook.client_id'),
+                'client_secret' => config('services.facebook.client_secret'),
+                'redirect_uri' => config('services.facebook.redirect'),
+                'code' => $code,
+            ]);
+
+            if ($tokenResponse->failed()) {
+                throw new \Exception('Failed to obtain access token from Facebook');
+            }
+
+            $accessToken = $tokenResponse->json()['access_token'];
+
+            $userInfoResponse = Http::get('https://graph.facebook.com/v12.0/me', [
+                'fields' => 'id,name,email,picture.type(large)',
+                'access_token' => $accessToken,
+            ]);
+
+            if ($userInfoResponse->failed()) {
+                throw new \Exception('Failed to fetch user info from Facebook');
+            }
+
+            $userInfo = $userInfoResponse->json();
+            return $this->processUser($userInfo, 'facebook');
+        }
+
+        throw new \Exception('Invalid login type');
+    }
+
+
+    private function processUser($socialiteUser, $platform)
+    {
+        $email = $socialiteUser['email'] ?? null;
+        $name = $socialiteUser['name'] ?? 'Unknown';
+        $platformId = $socialiteUser['id'] ?? null;
+        $avatar = $socialiteUser['picture'] ?? null;
+
+        $data = [
+            'username' => $name,
+            'avatar' => $avatar,
+            'status' => UserStatus::ACTIVE,
+            'password' => Hash::make('password'),
+        ];
+
+        if ($platform === 'google') {
+            $platformId = $socialiteUser['sub'] ?? null;
+            $data['google_id'] = $platformId;
+        } elseif ($platform === 'facebook') {
+            $avatar = $socialiteUser['picture']['data']['url'] ?? null;
+            $data['avatar'] = $avatar;
+            $data['facebook_id'] = $platformId;
+        }
+
+        $user = User::updateOrCreate(['email' => $email], $data);
+
+        return JWTAuth::fromUser($user);
+    }
+
+    public function generateTokenChangePassword() {
+        return "123";
     }
 }
