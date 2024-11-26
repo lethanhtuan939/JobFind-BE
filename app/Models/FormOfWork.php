@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class FormOfWork extends Model
 {
     use HasFactory;
+    protected $table = 'form_of_work';
 
     protected $fillable = ['name', 'description'];
 

@@ -2,29 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\LevelService;
+use App\Services\PositionService;
 use Illuminate\Http\Request;
 
-class LevelController extends Controller
+class PositionController extends Controller
 {
-    protected $levelService;
+    protected $positionService;
 
-    public function __construct(LevelService $levelService)
+    public function __construct(PositionService $positionService)
     {
-        $this->levelService = $levelService;
+        $this->positionService = $positionService;
     }
+
 
     public function index()
     {
         try {
-            $levels = $this->levelService->getAllLevels();
+            $positions = $this->positionService->getAllPositions();
             return response()->json([
-                'message' => 'Levels retrieved successfully.',
-                'data' => $levels,
+                'message' => 'Positions retrieved successfully.',
+                'data' => $positions,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to retrieve levels.',
+                'message' => 'Failed to retrieve positions.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -33,82 +34,85 @@ class LevelController extends Controller
     public function store(Request $request)
     {
         try {
-            $level = $this->levelService->createLevel($request->all());
+            $position = $this->positionService->createPosition($request->all());
             return response()->json([
-                'message' => 'Level created successfully.',
-                'data' => $level,
+                'message' => 'Position created successfully.',
+                'data' => $position,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to create level.',
+                'message' => 'Failed to create position.',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
+
 
     public function show($id)
     {
         try {
-            $level = $this->levelService->getLevelById($id);
+            $position = $this->positionService->getPositionById($id);
 
-            if (!$level) {
+            if (!$position) {
                 return response()->json([
-                    'message' => 'Level not found.',
+                    'message' => 'Position not found.',
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Level retrieved successfully.',
-                'data' => $level,
+                'message' => 'Position retrieved successfully.',
+                'data' => $position,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to retrieve level.',
+                'message' => 'Failed to retrieve position.',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
+
 
     public function update(Request $request, $id)
     {
         try {
-            $level = $this->levelService->updateLevel($id, $request->all());
+            $position = $this->positionService->updatePosition($id, $request->all());
 
-            if (!$level) {
+            if (!$position) {
                 return response()->json([
-                    'message' => 'Level not found.',
+                    'message' => 'Position not found.',
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Level updated successfully.',
-                'data' => $level,
+                'message' => 'Position updated successfully.',
+                'data' => $position,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to update level.',
+                'message' => 'Failed to update position.',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
 
+
     public function destroy($id)
     {
         try {
-            $deleted = $this->levelService->deleteLevel($id);
+            $deleted = $this->positionService->deletePosition($id);
 
             if (!$deleted) {
                 return response()->json([
-                    'message' => 'Level not found.',
+                    'message' => 'Position not found.',
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Level deleted successfully.',
+                'message' => 'Position deleted successfully.',
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to delete level.',
+                'message' => 'Failed to delete position.',
                 'error' => $e->getMessage(),
             ], 500);
         }

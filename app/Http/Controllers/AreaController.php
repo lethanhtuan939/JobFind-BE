@@ -2,29 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\LevelService;
+use App\Services\AreaService;
 use Illuminate\Http\Request;
 
-class LevelController extends Controller
+class AreaController extends Controller
 {
-    protected $levelService;
+    protected $areaService;
 
-    public function __construct(LevelService $levelService)
+    public function __construct(AreaService $areaService)
     {
-        $this->levelService = $levelService;
+        $this->areaService = $areaService;
     }
 
     public function index()
     {
         try {
-            $levels = $this->levelService->getAllLevels();
+            $areas = $this->areaService->getAllAreas();
             return response()->json([
-                'message' => 'Levels retrieved successfully.',
-                'data' => $levels,
+                'message' => 'Areas retrieved successfully.',
+                'data' => $areas,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to retrieve levels.',
+                'message' => 'Failed to retrieve areas.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -33,14 +33,14 @@ class LevelController extends Controller
     public function store(Request $request)
     {
         try {
-            $level = $this->levelService->createLevel($request->all());
+            $area = $this->areaService->createArea($request->all());
             return response()->json([
-                'message' => 'Level created successfully.',
-                'data' => $level,
+                'message' => 'Area created successfully.',
+                'data' => $area,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to create level.',
+                'message' => 'Failed to create area.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -49,21 +49,21 @@ class LevelController extends Controller
     public function show($id)
     {
         try {
-            $level = $this->levelService->getLevelById($id);
+            $area = $this->areaService->getAreaById($id);
 
-            if (!$level) {
+            if (!$area) {
                 return response()->json([
-                    'message' => 'Level not found.',
+                    'message' => 'Area not found.',
                 ], 404);
             }
-
+            
             return response()->json([
-                'message' => 'Level retrieved successfully.',
-                'data' => $level,
+                'message' => 'Area retrieved successfully.',
+                'data' => $area,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to retrieve level.',
+                'message' => 'Failed to retrieve area.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -72,21 +72,21 @@ class LevelController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $level = $this->levelService->updateLevel($id, $request->all());
+            $area = $this->areaService->updateArea($id, $request->all());
 
-            if (!$level) {
+            if (!$area) {
                 return response()->json([
-                    'message' => 'Level not found.',
+                    'message' => 'Area not found.',
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Level updated successfully.',
-                'data' => $level,
+                'message' => 'Area updated successfully.',
+                'data' => $area,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to update level.',
+                'message' => 'Failed to update area.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -95,20 +95,20 @@ class LevelController extends Controller
     public function destroy($id)
     {
         try {
-            $deleted = $this->levelService->deleteLevel($id);
+            $deleted = $this->areaService->deleteArea($id);
 
             if (!$deleted) {
                 return response()->json([
-                    'message' => 'Level not found.',
+                    'message' => 'Area not found.',
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Level deleted successfully.',
+                'message' => 'Area deleted successfully.',
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to delete level.',
+                'message' => 'Failed to delete area.',
                 'error' => $e->getMessage(),
             ], 500);
         }

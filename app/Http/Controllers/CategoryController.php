@@ -2,29 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\LevelService;
+use App\Services\CategoryService;
 use Illuminate\Http\Request;
 
-class LevelController extends Controller
+class CategoryController extends Controller
 {
-    protected $levelService;
+    protected $categoryService;
 
-    public function __construct(LevelService $levelService)
+    public function __construct(CategoryService $categoryService)
     {
-        $this->levelService = $levelService;
+        $this->categoryService = $categoryService;
     }
 
     public function index()
     {
         try {
-            $levels = $this->levelService->getAllLevels();
+            $categories = $this->categoryService->getAllCategories();
             return response()->json([
-                'message' => 'Levels retrieved successfully.',
-                'data' => $levels,
+                'message' => 'Categories retrieved successfully.',
+                'data' => $categories,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to retrieve levels.',
+                'message' => 'Failed to retrieve categories.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -33,14 +33,14 @@ class LevelController extends Controller
     public function store(Request $request)
     {
         try {
-            $level = $this->levelService->createLevel($request->all());
+            $category = $this->categoryService->createCategory($request->all());
             return response()->json([
-                'message' => 'Level created successfully.',
-                'data' => $level,
+                'message' => 'Category created successfully.',
+                'data' => $category,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to create level.',
+                'message' => 'Failed to create category.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -49,21 +49,21 @@ class LevelController extends Controller
     public function show($id)
     {
         try {
-            $level = $this->levelService->getLevelById($id);
+            $category = $this->categoryService->getCategoryById($id);
 
-            if (!$level) {
+            if (!$category) {
                 return response()->json([
-                    'message' => 'Level not found.',
+                    'message' => 'Category not found.',
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Level retrieved successfully.',
-                'data' => $level,
+                'message' => 'Category retrieved successfully.',
+                'data' => $category,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to retrieve level.',
+                'message' => 'Failed to retrieve category.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -72,21 +72,21 @@ class LevelController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $level = $this->levelService->updateLevel($id, $request->all());
+            $category = $this->categoryService->updateCategory($id, $request->all());
 
-            if (!$level) {
+            if (!$category) {
                 return response()->json([
-                    'message' => 'Level not found.',
+                    'message' => 'Category not found.',
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Level updated successfully.',
-                'data' => $level,
+                'message' => 'Category updated successfully.',
+                'data' => $category,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to update level.',
+                'message' => 'Failed to update category.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -95,20 +95,20 @@ class LevelController extends Controller
     public function destroy($id)
     {
         try {
-            $deleted = $this->levelService->deleteLevel($id);
+            $deleted = $this->categoryService->deleteCategory($id);
 
             if (!$deleted) {
                 return response()->json([
-                    'message' => 'Level not found.',
+                    'message' => 'Category not found.',
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Level deleted successfully.',
+                'message' => 'Category deleted successfully.',
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to delete level.',
+                'message' => 'Failed to delete category.',
                 'error' => $e->getMessage(),
             ], 500);
         }

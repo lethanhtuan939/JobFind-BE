@@ -2,68 +2,71 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\LevelService;
+use App\Services\CompanyService;
 use Illuminate\Http\Request;
 
-class LevelController extends Controller
+class CompanyController extends Controller
 {
-    protected $levelService;
+    protected $companyService;
 
-    public function __construct(LevelService $levelService)
+    public function __construct(CompanyService $companyService)
     {
-        $this->levelService = $levelService;
+        $this->companyService = $companyService;
     }
+
 
     public function index()
     {
         try {
-            $levels = $this->levelService->getAllLevels();
+            $companies = $this->companyService->getAllCompanies();
             return response()->json([
-                'message' => 'Levels retrieved successfully.',
-                'data' => $levels,
+                'message' => 'Companies retrieved successfully.',
+                'data' => $companies,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to retrieve levels.',
+                'message' => 'Failed to retrieve companies.',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
+
 
     public function store(Request $request)
     {
         try {
-            $level = $this->levelService->createLevel($request->all());
+            $company = $this->companyService->createCompany($request->all());
             return response()->json([
-                'message' => 'Level created successfully.',
-                'data' => $level,
+                'message' => 'Company created successfully.',
+                'data' => $company,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to create level.',
+                'message' => 'Failed to create company.',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
 
+
     public function show($id)
     {
         try {
-            $level = $this->levelService->getLevelById($id);
+            $company = $this->companyService->getCompanyById($id);
 
-            if (!$level) {
+            if (!$company) {
                 return response()->json([
-                    'message' => 'Level not found.',
+                    'message' => 'Company not found.',
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Level retrieved successfully.',
-                'data' => $level,
+                'message' => 'Company retrieved successfully.',
+                'data' => $company,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to retrieve level.',
+                'message' => 'Failed to retrieve company.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -72,21 +75,21 @@ class LevelController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $level = $this->levelService->updateLevel($id, $request->all());
+            $company = $this->companyService->updateCompany($id, $request->all());
 
-            if (!$level) {
+            if (!$company) {
                 return response()->json([
-                    'message' => 'Level not found.',
+                    'message' => 'Company not found.',
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Level updated successfully.',
-                'data' => $level,
+                'message' => 'Company updated successfully.',
+                'data' => $company,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to update level.',
+                'message' => 'Failed to update company.',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -95,20 +98,20 @@ class LevelController extends Controller
     public function destroy($id)
     {
         try {
-            $deleted = $this->levelService->deleteLevel($id);
+            $deleted = $this->companyService->deleteCompany($id);
 
             if (!$deleted) {
                 return response()->json([
-                    'message' => 'Level not found.',
+                    'message' => 'Company not found.',
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Level deleted successfully.',
+                'message' => 'Company deleted successfully.',
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to delete level.',
+                'message' => 'Failed to delete company.',
                 'error' => $e->getMessage(),
             ], 500);
         }
