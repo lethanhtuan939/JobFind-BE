@@ -9,10 +9,10 @@ use Illuminate\Validation\ValidationException;
 
 class RoleService
 {
-    // public function getAllRoles()
-    // {
-    //     return Role::all();
-    // }
+    public function getAllRoles()
+    {
+        return Role::all();
+    }
 
     public function getAllRolesPaginated($pageSize = 5, $page = 1, $search = null)
     {

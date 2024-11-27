@@ -135,9 +135,12 @@ class AuthController extends Controller
 
     public function me()
     {
+        $user = auth()->user();
+        $user->load('roles');
+
         return response()->json([
             'status' => true,
-            'data' => auth()->user()
+            'data' => $user
         ]);
     }
 
@@ -195,18 +198,6 @@ class AuthController extends Controller
         $token = $this->$authService->generateTokenChangePassword();
 
         $this->$authService->sendEmailVerification($token, $user);
-    }
-
-    public function addRoleToUser(Request $request, $userId)
-    {
-        $roleName = $request->input('role_name');
-        $user = $this->authService->addRoleToUser($userId, $roleName);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Role added to user successfully',
-            'data' => $user->roles
-        ], 200);
     }
 
     protected function respondWithToken($token)
