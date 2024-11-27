@@ -270,12 +270,4 @@ class AuthService
     public function generateTokenChangePassword() {
         return "123";
     }
-
-    public function addRoleToUser($userId, $roleName)
-    {
-        $user = User::findOrFail($userId);
-        $this->roleService->assignRoleToUser($user, $roleName);
-
-        return $user;
-    }
 }

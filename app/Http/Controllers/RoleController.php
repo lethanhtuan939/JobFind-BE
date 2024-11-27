@@ -14,6 +14,16 @@ class RoleController extends Controller
         $this->roleService = $roleService;
     }
 
+    public function all(Request $request)
+    {
+        $roles = $this->roleService->getAllRoles();
+        return response()->json([
+            'code' => 200,
+            'message' => 'Roles retrieved successfully',
+            'data' => $roles
+        ], 200);
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->query('p', 1);

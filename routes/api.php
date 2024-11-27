@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,7 +35,6 @@ Route::group([
     Route::get('/social', [AuthController::class, 'socialLogin']);
     Route::post('/social/callback', [AuthController::class, 'socialCallback']);
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('/users/{userId}/roles', [AuthController::class, 'addRoleToUser']);
 });
 
 Route::group([
@@ -53,8 +53,23 @@ Route::group([
     'prefix' => 'v1/roles'
 ], function($router) {
     Route::get('/', [RoleController::class, 'index']);
+    Route::get('/all', [RoleController::class, 'all']);
     Route::get('/{id}', [RoleController::class, 'show']);
     Route::post('/', [RoleController::class, 'store']);
     Route::put('/{id}', [RoleController::class, 'update']);
     Route::delete('/{id}', [RoleController::class, 'destroy']);
+});
+
+Route::group([
+    'middleware' => 'api', 'jwt.auth', 'auth',
+    'prefix' => 'v1/users'
+], function($router) {
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('/{id}', [UserController::class, 'show']);
+    Route::post('/', [UserController::class, 'store']);
+    Route::put('/{id}', [UserController::class, 'update']);
+    Route::delete('/{id}', [UserController::class, 'destroy']);
+    Route::post('/active/{id}', [UserController::class, 'active']);
+    Route::post('/{userId}/roles', [UserController::class, 'addRoleToUser']);
+    Route::put('/{userId}/status', [UserController::class, 'changeStatus']);
 });
