@@ -30,8 +30,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('v1/levels', [LevelController::class, 'index']);
 Route::group([
-    'middleware' => ['auth:api', 'admin'],
-    'prefix' => 'levels'
+    'middleware' => 'api', 'jwt.auth', 'auth',
+    'prefix' => 'v1/levels'
 ], function($router) {
     Route::post('/', [LevelController::class, 'store']);
     Route::get('/{id}', [LevelController::class, 'show']);
@@ -41,8 +41,8 @@ Route::group([
 
 Route::get('v1/positions', [PositionController::class, 'index']);
 Route::group([
-    'middleware' => ['auth:api', 'admin'],
-    'prefix' => 'positions'
+    'middleware' => 'api', 'jwt.auth', 'auth',
+    'prefix' => 'v1/positions'
 ], function($router) {
     Route::post('/', [PositionController::class, 'store']);
     Route::get('/{id}', [PositionController::class, 'show']);
@@ -52,8 +52,8 @@ Route::group([
 
 Route::get('v1/areas', [AreaController::class, 'index']);
 Route::group([
-    'middleware' => 'auth:api',
-    'prefix' => 'areas'
+    'middleware' => 'api', 'jwt.auth', 'auth',
+    'prefix' => 'v1/areas'
 ], function($router) {
     Route::post('/', [AreaController::class, 'store']);
     Route::get('/{id}', [AreaController::class, 'show']);
@@ -63,19 +63,20 @@ Route::group([
 
 Route::get('v1/companies', [CompanyController::class, 'index']);
 Route::group([
-    'middleware' => 'auth:api',
-    'prefix' => 'companies'
+    'middleware' => 'api', 'jwt.auth', 'auth',
+    'prefix' => 'v1/companies'
 ], function($router) {
     Route::post('/', [CompanyController::class, 'store']);
     Route::get('/{id}', [CompanyController::class, 'show']);
     Route::put('/{id}', [CompanyController::class, 'update']);
+    Route::put('/{id}/status', [CompanyController::class, 'updateStatus']);
     Route::delete('/{id}', [CompanyController::class, 'destroy']);
 });
 
 Route::get('v1/form-of-works', [FormOfWorkController::class, 'index']);
 Route::group([
-    'middleware' => 'auth:api',
-    'prefix' => 'form-of-works'
+    'middleware' => 'api', 'jwt.auth', 'auth',
+    'prefix' => 'v1/form-of-works'
 ], function($router) {
     Route::post('/', [FormOfWorkController::class, 'store']);
     Route::get('/{id}', [FormOfWorkController::class, 'show']);
@@ -86,7 +87,7 @@ Route::group([
 
 Route::get('v1/categories', [CategoryController::class, 'index']);
 Route::group([
-    'middleware' => 'api', 'jwt.auth', 'auth', 'admin',
+    'middleware' => 'api', 'jwt.auth', 'auth',
     'prefix' => 'v1/categories'
 ], function($router) {
     Route::post('/', [CategoryController::class, 'store']);

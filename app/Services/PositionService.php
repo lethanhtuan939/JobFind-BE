@@ -67,7 +67,6 @@ class PositionService
     {
         $validator = Validator::make($params, [
             'name' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {

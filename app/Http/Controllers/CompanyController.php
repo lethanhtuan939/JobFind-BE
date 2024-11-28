@@ -87,7 +87,7 @@ class CompanyController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $company = $this->companyService->updateCompany($id, $request->all());
+            $company = $this->companyService->updateCompany($id, params: $request->all());
 
             if (!$company) {
                 return response()->json([
@@ -127,5 +127,23 @@ class CompanyController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+    public function updateStatus(Request $request,$id)
+    {
+        $request->validate([
+            'status' => 'required|string|in:Active,Inactive,Pending',
+        ]);
+
+        $company = $this->companyService->updateStatusCompany($id, $request->status);
+
+        if ($company) {
+            return response()->json([
+                'message' => 'Company status updated successfully',
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => 'Company not found'
+        ], 404);
     }
 }

@@ -44,6 +44,24 @@ class CompanyService
         return null;
     }
 
+    public function updateStatusCompany($id, $status)
+    {
+
+        $this->validateStatus($status);
+
+        $company = $this->getCompanyById($id);
+
+        if ($company) {
+            $company->status = $status;
+            $company->save();
+
+            return $company;
+        }
+
+        return null;
+    }
+
+
     public function deleteCompany($id)
     {
         $company = $this->getCompanyById($id);
@@ -65,7 +83,7 @@ class CompanyService
 
         return $query->paginate($page, ['*'], 'page', $pageSize);
     }
-    
+
     private function validateParams($params)
     {
         $validator = Validator::make($params, [
@@ -83,4 +101,11 @@ class CompanyService
             throw new ValidationException($validator);
         }
     }
+    private function validateStatus($status)
+    {
+        if (!in_array($status, ['Active', 'Inactive', 'Pending'])) {
+            throw new \InvalidArgumentException("Invalid status value");
+        }
+    }
+
 }
