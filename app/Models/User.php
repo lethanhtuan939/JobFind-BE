@@ -13,7 +13,7 @@ class User extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $table = 'users';
+    protected $table = 'user';
 
      protected $fillable = [
         'username',
