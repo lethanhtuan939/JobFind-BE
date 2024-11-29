@@ -9,6 +9,8 @@ class Post extends Model
 {
     use HasFactory;
 
+    protected $table = 'post';
+
     protected $fillable = [
         'title',
         'description',
@@ -33,7 +35,6 @@ class Post extends Model
         return $this->belongsTo(Area::class);
     }
 
-     // Quan hệ với bảng tags (nhiều-nhiều)
     public function tags()
     {
         return $this->belongsToMany(Tag::class, 'post_tag', 'post_id', 'tag_id');

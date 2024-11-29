@@ -14,15 +14,15 @@ class TagController extends Controller
         $this->tagService = $tagService;
     }
 
-    // public function index()
-    // {
-    //     $tags = $this->tagService->getAllTags();
-    //     return response()->json([
-    //         'code' => 200,
-    //         'message' => 'Tags retrieved successfully',
-    //         'data' => $tags
-    //     ], 200);
-    // }
+    public function findAll()
+    {
+        $tags = $this->tagService->getAllTags();
+        return response()->json([
+            'code' => 200,
+            'message' => 'Tags retrieved successfully',
+            'data' => $tags
+        ], 200);
+    }
 
     public function index(Request $request)
     {
