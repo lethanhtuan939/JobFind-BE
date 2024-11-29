@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\AuthService;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
@@ -15,7 +16,7 @@ class AuthController extends Controller
         $this->authService = $authService;
         $this->middleware('auth:api', ['except' => ['login', 'socialLogin', 'register', 
                                                     'verifyOtp', 'resendOtp', 'socialCallback',
-                                                    'forgotPassword']]);
+                                                    'forgotPassword', 'checkToken']]);
     }
 
     public function register(Request $request)
@@ -74,20 +75,31 @@ class AuthController extends Controller
         }
     }
 
+    // public function login(Request $request)
+    // {
+    //     try {
+    //         $credentials = $request->only(['email', 'password']);
+
+    //         $token = $this->authService->login($credentials);
+
+    //         return $this->respondWithToken($token);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => $e->getMessage(),
+    //         ], 401);
+    //     }
+    // }
+
     public function login(Request $request)
     {
-        try {
-            $credentials = $request->only(['email', 'password']);
+        $credentials = $request->only('email', 'password');
 
-            $token = $this->authService->login($credentials);
-
+        if ($token = JWTAuth::attempt($credentials)) {
             return $this->respondWithToken($token);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage(),
-            ], 401);
         }
+
+        return response()->json(['error' => 'Unauthorized'], 401);
     }
 
     public function resendOtp(Request $request)
@@ -119,6 +131,7 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
+            JWTAuth::invalidate(JWTAuth::getToken());
             auth()->logout();
 
             return response()->json([
@@ -138,11 +151,25 @@ class AuthController extends Controller
     {
         $user = auth()->user();
         $user->load('roles');
+        $user->load('companies');
 
         return response()->json([
             'status' => true,
             'data' => $user
         ]);
+    }
+
+    public function checkToken()
+    {
+        try {
+            if (!$user = JWTAuth::parseToken()->authenticate()) {
+                return response()->json(['valid' => false], 200);
+            }
+        } catch (JWTException $e) {
+            return response()->json(['valid' => false], 200);
+        }
+
+        return response()->json(['valid' => true], 200);
     }
 
     public function refresh()
