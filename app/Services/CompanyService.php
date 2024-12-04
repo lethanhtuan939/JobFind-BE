@@ -3,10 +3,14 @@
 namespace App\Services;
 
 use App\Models\Company;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Validation\ValidationException;
 use Validator;
 use App\Services\DropboxService;
 use App\Services\CloudinaryService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class CompanyService
 {
@@ -119,23 +123,22 @@ class CompanyService
         return null;
     }
 
-    public function updateStatusCompany($id, $status)
+    public function updateStatusCompany($companyId, $status)
     {
-
-        $this->validateStatus($status);
-
-        $company = $this->getCompanyById($id);
-
-        if ($company) {
+        DB::transaction(function () use ($companyId, $status) {
+            $company = Company::findOrFail($companyId);
             $company->status = $status;
             $company->save();
 
-            return $company;
-        }
+            if ($status === 'Verified') {
+                $user = $company->users()->firstOrFail();
+                $role = Role::firstOrCreate(['name' => 'HR']);
+                $user->roles()->sync([$role->id]);
+            }
+        });
 
-        return null;
+        return Company::findOrFail($companyId);
     }
-
 
     public function deleteCompany($id)
     {

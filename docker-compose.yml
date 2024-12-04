@@ -1,0 +1,44 @@
+services:
+    mysql:
+        image: mysql:latest
+        container_name: mysql-container
+        environment:
+            MYSQL_DATABASE: jobfind
+            MYSQL_ROOT_PASSWORD: 123456
+        ports:
+            - "3307:3306"
+        volumes:
+            - dbdata:/var/lib/mysql
+            - ./jobfind_sql.sql:/docker-entrypoint-initdb.d/jobfind_sql.sql
+        networks:
+            - backend
+    nginx:
+        image: nginx:latest
+        container_name: nginx-container
+        volumes:
+            - .:/var/www
+            - ./docker/nginx/conf.d:/etc/nginx/conf.d
+        ports:
+            - "8000:80"
+            - "443:443"
+        networks:
+            - backend
+    app:
+        container_name: jobfind-container
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        volumes:
+            - ./:/var/www
+            - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+        networks:
+            - backend
+        depends_on:
+            - mysql
+
+networks:
+    backend:
+        driver: bridge
+volumes:
+    dbdata:
+        driver: local

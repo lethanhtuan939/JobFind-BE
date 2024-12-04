@@ -53,9 +53,11 @@ class UserService
         return $user;
     }
 
-    public function addRolesToUser(int $userId, array $roleNames)
+    public function addRolesToUser(int $userId, array $roleNames, $status)
     {
         $user = User::findOrFail($userId);
+        $user->status = $status;
+        $user->save();
 
         $currentRoles = $user->roles->pluck('name')->toArray();
 

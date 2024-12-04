@@ -61,7 +61,8 @@ class UserController extends Controller
     public function addRoleToUser(Request $request, $userId)
     {
         $roleNames = $request->input('role_names', []);
-        $user = $this->userService->addRolesToUser($userId, $roleNames);
+        $status = $request->input('status');
+        $user = $this->userService->addRolesToUser($userId, $roleNames, $status);
 
         return response()->json([
             'status' => true,

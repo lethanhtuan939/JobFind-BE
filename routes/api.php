@@ -13,6 +13,7 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\StatisticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +25,17 @@ use App\Http\Controllers\PostController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'v1/statistics'
+], function($router) {
+    Route::get('/posts-by-area', [StatisticsController::class, 'postsByArea']);
+    Route::get('/posts-by-month', [StatisticsController::class, 'postsByMonth']);
+    Route::get('/total-posts', [StatisticsController::class, 'totalPosts']);
+    Route::get('/total-users', [StatisticsController::class, 'totalUsers']);
+    Route::get('/total-companies', [StatisticsController::class, 'totalCompanies']);
+});
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -70,7 +82,7 @@ Route::group([
 ], function($router) {
     Route::post('/{id}', [CompanyController::class, 'update']);
     Route::get('/pending', [CompanyController::class, 'getPendingCompanies'])->middleware('auth.jwt', 'role:ADMIN');
-    Route::put('/{companyId}/verify', [CompanyController::class, 'updateCompanyStatus'])->middleware('auth.jwt', 'role:ADMIN');
+    Route::post('/{companyId}/verify', [CompanyController::class, 'verify'])->middleware('auth.jwt', 'role:ADMIN');
     Route::get('/my-company', [CompanyController::class, 'getCompanyByUser']);
     Route::post('/', [CompanyController::class, 'store']);
     Route::get('/{id}', [CompanyController::class, 'show']);
@@ -159,7 +171,7 @@ Route::group([
     Route::delete('/{id}', [UserController::class, 'destroy']);
     Route::post('/active/{id}', [UserController::class, 'active'])->middleware('auth.jwt', 'role:ADMIN',);
     Route::post('/{userId}/roles', [UserController::class, 'addRoleToUser'])->middleware('auth.jwt', 'role:ADMIN',);
-    Route::put('/{userId}/status', [UserController::class, 'changeStatus'])->middleware('auth.jwt', 'role:ADMIN,HR');
+    Route::put('/{userId}/status', [UserController::class, 'changeStatus'])->middleware('auth.jwt', 'role:ADMIN');
 });
 
 Route::group([

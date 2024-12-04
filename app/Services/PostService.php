@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Post;
 use App\Models\User;
+use App\Models\Company;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
@@ -37,7 +38,7 @@ class PostService
         $user = User::findOrFail($userId);
         $company = Company::findOrFail($user->company_id);
 
-        if (!$company || !in_array($company->status, ['active', 'verified'])) {
+        if (!$company || !in_array($company->status, ['Active', 'Verified'])) {
             throw new \Exception('Your company is not authorized to create posts');
         }
 

@@ -46,6 +46,8 @@ class CompanyController extends Controller
 
     public function store(Request $request)
     {
+        
+        $user = Auth::user();
         $params = $request->all();
 
         if ($request->hasFile('logo')) {
@@ -61,6 +63,8 @@ class CompanyController extends Controller
         }
 
         $company = $this->companyService->createCompany($params);
+        $user->company_id = $company->id;
+        $user->save();
 
         return response()->json([
             'code' => 201,
@@ -79,11 +83,11 @@ class CompanyController extends Controller
         ], 200);
     }
 
-    public function updateCompanyStatus(Request $request, $companyId)
+    public function verify(Request $request, $companyId)
     {
         $status = $request->input('status');
 
-        $company = $this->companyService->updateCompanyStatus($companyId, $status);
+        $company = $this->companyService->updateStatusCompany($companyId, $status);
 
         return response()->json([
             'code' => 200,
