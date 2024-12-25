@@ -30,5 +30,25 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
+    
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI')
+    ],
 
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => env('FACEBOOK_REDIRECT_URI')
+    ],
+    'firebase' => [
+        'database_url' => env('FIREBASE_DATABASE_URL', ''),
+        'project_id' => env('FIREBASE_PROJECT_ID', ''),
+        'private_key_id' => env('FIREBASE_PRIVATE_KEY_ID', 'your-key'),
+        'private_key' => str_replace("\\n", "\n", env('FIREBASE_PRIVATE_KEY', '')),
+        'client_email' => env('FIREBASE_CLIENT_EMAIL', 'e@email.com'),
+        'client_id' => env('FIREBASE_CLIENT_ID', ''),
+        'client_x509_cert_url' => env('FIREBASE_CLIENT_x509_CERT_URL', ''),
+    ]
 ];
